@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tasks.fun</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d0d18;
+    --surface: #181830;
+    --card: #22223a;
+    --accent: #ff5e94;
+    --accent2: #b46eff;
+    --accent3: #5ee8d6;
+    --text: #ededf4;
+    --muted: #6e6e90;
+    --green: #3ddb72;
+    --grad: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+  #app {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem 5.5rem;
+  }
+  #app > * { animation: slideUp .35s ease both; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+
+  /* ── Hero ── */
+  .hero { text-align: center; max-width: 420px; width: 100%; }
+  .logo {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -2px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .logo-dot { font-weight: 400; }
+  .pitch {
+    font-size: 1.15rem;
+    color: var(--muted);
+    margin: .6rem 0 2rem;
+    line-height: 1.55;
+  }
+  .pitch strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── Task demo ── */
+  .quest-card {
+    width: 100%;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.2rem;
+    border: 1px solid rgba(255,255,255,.05);
+  }
+  .quest-card h3 {
+    font-size: .65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: .9rem;
+  }
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .55rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .task-row:last-of-type { border-bottom: none; }
+  .task-row.done .task-text { text-decoration: line-through; color: var(--muted); }
+  .dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--accent2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+    font-size: 11px;
+    line-height: 1;
+    color: #fff;
+  }
+  .task-row.done .dot {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    animation: pop .3s ease;
+  }
+  .task-text { font-size: .9rem; }
+  .xp-tag {
+    margin-left: auto;
+    font-size: .65rem;
+    font-weight: 700;
+    color: var(--green);
+    opacity: 0;
+    transition: opacity .25s;
+  }
+  .task-row.done .xp-tag { opacity: 1; }
+  .progress-strip {
+    margin-top: 1rem;
+    background: var(--card);
+    border-radius: 10px;
+    padding: .65rem .9rem;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: .75rem;
+    color: var(--muted);
+  }
+  .flame { font-size: 1rem; }
+  .bar-track {
+    flex: 1;
+    height: 5px;
+    background: rgba(255,255,255,.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--grad);
+    border-radius: 3px;
+    transition: width .5s ease;
+  }
+
+  /* ── Flow map ── */
+  .flow-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .75rem;
+    max-width: 360px;
+    width: 100%;
+  }
+  .flow-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: .4rem;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .flow-box {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,.05);
+    border-radius: 11px;
+    padding: .85rem 1.1rem;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color .2s, transform .15s;
+    cursor: pointer;
+  }
+  .flow-box:hover { border-color: var(--accent2); transform: translateY(-2px); }
+  .flow-label { font-weight: 600; font-size: .9rem; }
+  .flow-sub { font-size: .7rem; color: var(--muted); margin-top: .1rem; }
+  .flow-arrow { color: var(--muted); font-size: .85rem; }
+  .flow-pipe {
+    width: 2px;
+    height: 10px;
+    background: rgba(255,255,255,.07);
+  }
+
+  /* ── Placeholder screens ── */
+  .placeholder { text-align: center; max-width: 360px; }
+  .placeholder .big-icon { font-size: 2.8rem; margin-bottom: .8rem; opacity: .7; }
+  .placeholder h2 { font-size: 1.4rem; margin-bottom: .4rem; }
+  .placeholder p { color: var(--muted); line-height: 1.6; font-size: .9rem; }
+  .soon-badge {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: .3rem .8rem;
+    border-radius: 999px;
+    font-size: .6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    background: var(--card);
+    color: var(--accent2);
+    border: 1px solid rgba(180,110,255,.2);
+  }
+
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(24,24,48,.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255,255,255,.06);
+    display: flex;
+    justify-content: center;
+    padding: .45rem 0 calc(.45rem + env(safe-area-inset-bottom));
+    z-index: 10;
+  }
+  .bottom-nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: .55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    padding: .5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .2rem;
+    transition: color .2s;
+    min-width: 56px;
+  }
+  .bottom-nav button .ico { font-size: 1.15rem; }
+  .bottom-nav button.active { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<nav class="bottom-nav">
+  <button data-screen="/">
+    <span class="ico">&#9733;</span>Today
+  </button>
+  <button data-screen="/flow">
+    <span class="ico">&#9638;</span>Flow
+  </button>
+  <button data-screen="/s/2">
+    <span class="ico">&#9775;</span>Quests
+  </button>
+  <button data-screen="/s/3">
+    <span class="ico">&#9829;</span>Party
+  </button>
+  <button data-screen="/s/4">
+    <span class="ico">&#9881;</span>Stats
+  </button>
+</nav>
+
+<script>
+var app = document.getElementById('app');
+
+var tasks = [
+  { text: 'Ship the landing page',    xp: 30, done: false },
+  { text: 'Review pull request #42',  xp: 20, done: false },
+  { text: 'Write three unit tests',   xp: 25, done: true  },
+  { text: 'Stretch for 5 minutes',    xp: 10, done: false },
+];
+
+function doneCount() { return tasks.filter(function(t){ return t.done; }).length; }
+
+function heroScreen() {
+  var pct = Math.round((doneCount() / tasks.length) * 100);
+  app.innerHTML =
+    '<div class="hero">' +
+      '<div class="logo">tasks<span class="logo-dot">.fun</span></div>' +
+      '<p class="pitch">Finish things. <strong>Earn the dopamine.</strong></p>' +
+      '<div class="quest-card">' +
+        '<h3>Today\'s Quest Log</h3>' +
+        tasks.map(function(t, i) {
+          return '<div class="task-row' + (t.done ? ' done' : '') + '" data-i="' + i + '">' +
+            '<div class="dot">' + (t.done ? '\u2713' : '') + '</div>' +
+            '<span class="task-text">' + t.text + '</span>' +
+            '<span class="xp-tag">+' + t.xp + ' XP</span>' +
+          '</div>';
+        }).join('') +
+        '<div class="progress-strip">' +
+          '<span class="flame">\uD83D\uDD25</span>' +
+          '<span>' + doneCount() + '/' + tasks.length + '</span>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
+          '<span>' + pct + '%</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  app.querySelectorAll('.task-row').forEach(function(el) {
+    el.addEventListener('click', function() {
+      tasks[+el.dataset.i].done = !tasks[+el.dataset.i].done;
+      heroScreen();
+    });
+  });
+}
+
+function flowScreen() {
+  var screens = [
+    { r: '/',    name: 'Quest Log',    sub: 'Daily tasks as dopamine quests' },
+    { r: '/s/2', name: 'Quest Board',  sub: 'Browse & create challenges' },
+    { r: '/s/3', name: 'Party',        sub: 'Team up with friends' },
+    { r: '/s/4', name: 'Stats & Loot', sub: 'XP, streaks, unlocks' },
+  ];
+  app.innerHTML =
+    '<div class="flow-map">' +
+      '<div class="flow-title">App Flow</div>' +
+      screens.map(function(s, i) {
+        return '<a class="flow-box" href="#' + s.r + '">' +
+          '<div><div class="flow-label">' + s.name + '</div>' +
+          '<div class="flow-sub">' + s.sub + '</div></div>' +
+          '<span class="flow-arrow">\u2192</span></a>' +
+          (i < screens.length - 1 ? '<div class="flow-pipe"></div>' : '');
+      }).join('') +
+    '</div>';
+}
+
+function placeholderScreen(title, icon, teaser) {
+  app.innerHTML =
+    '<div class="placeholder">' +
+      '<div class="big-icon">' + icon + '</div>' +
+      '<h2>' + title + '</h2>' +
+      '<p>' + teaser + '</p>' +
+      '<span class="soon-badge">Coming next</span>' +
+    '</div>';
+}
+
+var routes = {
+  '/':     function() { heroScreen(); },
+  '/flow': function() { flowScreen(); },
+  '/s/2':  function() { placeholderScreen('Quest Board', '\u2637', 'Browse community quests, create your own, and turn any task into a challenge worth completing.'); },
+  '/s/3':  function() { placeholderScreen('Party Mode', '\u2665', 'Invite friends, form a party, and tackle shared quest lines together \u2014 accountability meets fun.'); },
+  '/s/4':  function() { placeholderScreen('Stats & Loot', '\u2699', 'Track your XP, view streak history, and unlock cosmetic rewards for consistent follow-through.'); },
+};
+
+function navigate() {
+  var hash = location.hash.slice(1) || '/';
+  (routes[hash] || routes['/'])();
+  document.querySelectorAll('.bottom-nav button').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.screen === hash || (hash === '' && btn.dataset.screen === '/'));
+  });
+  app.style.animation = 'none';
+  void app.offsetHeight;
+  app.style.animation = '';
+}
+
+document.querySelectorAll('.bottom-nav button').forEach(function(btn) {
+  btn.addEventListener('click', function() { location.hash = btn.dataset.screen; });
+});
+
+window.addEventListener('hashchange', navigate);
+navigate();
+</script>
+</body>
+</html>
